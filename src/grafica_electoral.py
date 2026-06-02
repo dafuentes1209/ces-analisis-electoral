@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
 # Cargar datos
-df = pd.read_csv('/mnt/user-data/outputs/electoral_medellin.csv')
+df = pd.read_csv(r'C:\Users\david\Downloads\ces_analisis_electoral\data\electoral_medellin.csv')
 
 # Excluir filas no-comunas para la gráfica principal
 df_comunas = df[~df['codigo'].isin([90, 98, 99])].copy()
@@ -61,5 +61,6 @@ for i, (_, row) in enumerate(df_comunas.iterrows()):
         ax.axhspan(i - 0.45, i + 0.45, color='#2563EB', alpha=0.06)
 
 plt.tight_layout()
-plt.savefig('/mnt/user-data/outputs/grafica_electoral_medellin.png', dpi=150, bbox_inches='tight')
+plt.savefig(r'C:\Users\david\Downloads\ces_analisis_electoral\outputs\grafica_electoral_medellin.png', dpi=150, bbox_inches='tight')
+            
 print("Gráfica guardada.")

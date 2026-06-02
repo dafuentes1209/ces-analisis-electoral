@@ -3,7 +3,8 @@ import pandas as pd
 from folium.plugins import MarkerCluster
 import branca.colormap as cm
 
-df = pd.read_csv('/home/claude/comunas_procesadas.csv')
+df = pd.read_csv(r'C:\Users\david\Downloads\ces_analisis_electoral\data\comunas_procesadas.csv')
+
 
 # Mapa centrado en Medellín
 m = folium.Map(
@@ -88,5 +89,5 @@ title_html = """
 """
 m.get_root().html.add_child(folium.Element(title_html))
 
-m.save('/mnt/user-data/outputs/mapa_electoral_medellin.html')
+m.save(r'C:\Users\david\Downloads\ces_analisis_electoral\outputs\mapa_electoral_medellin.html')
 print("Mapa guardado.")

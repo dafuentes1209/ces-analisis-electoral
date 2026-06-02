@@ -1,66 +1,109 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
+from matplotlib import rcParams
 
-# Cargar datos
-df = pd.read_csv(r'C:\Users\david\Downloads\ces_analisis_electoral\data\electoral_medellin.csv')
+# ── Sistema de diseño inspirado en La Silla Vacía ─────────────────────────
+rcParams['font.family']        = 'DejaVu Sans'
+rcParams['axes.spines.top']    = False
+rcParams['axes.spines.right']  = False
+rcParams['axes.spines.left']   = False
+rcParams['axes.spines.bottom'] = False
 
-# Excluir filas no-comunas para la gráfica principal
-df_comunas = df[~df['codigo'].isin([90, 98, 99])].copy()
-df_comunas = df_comunas.sort_values('ivan_cepeda', ascending=True)
+FONDO       = '#f4f2ed'
+TEXTO_PRINC = '#3d3b3d'
+TEXTO_SEC   = '#787e57'
+GRID_COLOR  = '#d6d3ca'
 
-# Colores por candidato
-colores = {
-    'ivan_cepeda':               '#2563EB',
-    'abelardo_de_la_espriella':  '#6B7280',
-    'paloma_valencia':           '#DB2777',
-    'sergio_fajardo':            '#059669',
+# ── Colores candidatos ─────────────────────────────────────────────────────
+COLORES = {
+    'ivan_cepeda':               '#7c3aed',
+    'abelardo_de_la_espriella':  '#ea580c',
+    'paloma_valencia':           '#38bdf8',
+    'sergio_fajardo':            '#ca8a04',
 }
-nombres = {
+NOMBRES = {
     'ivan_cepeda':               'Iván Cepeda',
     'abelardo_de_la_espriella':  'De La Espriella',
     'paloma_valencia':           'Paloma Valencia',
     'sergio_fajardo':            'Sergio Fajardo',
 }
 
-candidatos = list(colores.keys())
-n = len(df_comunas)
-bar_height = 0.18
-y = range(n)
+# ── Datos ──────────────────────────────────────────────────────────────────
+df = pd.read_csv(r'C:\Users\david\Downloads\ces_analisis_electoral\data\electoral_medellin.csv')
+df = df[~df['codigo'].isin([90, 98, 99])].copy()
+df = df.sort_values('ivan_cepeda', ascending=True)
 
-fig, ax = plt.subplots(figsize=(13, 9))
-fig.patch.set_facecolor('#F8FAFC')
-ax.set_facecolor('#F8FAFC')
+candidatos = list(COLORES.keys())
+n          = len(df)
+bar_h      = 0.19
+y          = range(n)
+
+# ── Figura ─────────────────────────────────────────────────────────────────
+fig, ax = plt.subplots(figsize=(14, 10))
+fig.patch.set_facecolor(FONDO)
+ax.set_facecolor(FONDO)
 
 for i, cand in enumerate(candidatos):
-    offset = (i - 1.5) * bar_height
-    bars = ax.barh(
+    offset = (i - 1.5) * bar_h
+    ax.barh(
         [yi + offset for yi in y],
-        df_comunas[cand],
-        height=bar_height,
-        color=colores[cand],
-        label=nombres[cand],
-        alpha=0.92
+        df[cand],
+        height=bar_h,
+        color=COLORES[cand],
+        label=NOMBRES[cand],
+        alpha=0.92,
+        zorder=3
     )
 
+# ── Ejes ───────────────────────────────────────────────────────────────────
 ax.set_yticks(list(y))
-ax.set_yticklabels(df_comunas['comuna'], fontsize=10)
-ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f'{int(x):,}'.replace(',', '.')))
-ax.set_xlabel('Votos', fontsize=11, color='#374151')
-ax.set_title('Resultados electorales por comuna — Medellín\nCepeda · De La Espriella · Paloma Valencia · Fajardo',
-             fontsize=13, fontweight='bold', color='#111827', pad=15)
-
-ax.legend(loc='lower right', fontsize=10, framealpha=0.9)
-ax.grid(axis='x', linestyle='--', alpha=0.4, color='#9CA3AF')
-ax.spines[['top','right','left']].set_visible(False)
+ax.set_yticklabels(df['comuna'], fontsize=11, color=TEXTO_PRINC)
+ax.xaxis.set_major_formatter(
+    mticker.FuncFormatter(lambda x, _: f'{int(x):,}'.replace(',', '.'))
+)
+ax.tick_params(axis='x', labelsize=9, colors=TEXTO_SEC, length=0)
 ax.tick_params(axis='y', length=0)
+ax.set_xlabel('Votos', fontsize=10, color=TEXTO_SEC, labelpad=12)
+ax.grid(axis='x', linestyle='--', linewidth=0.6,
+        alpha=0.6, color=GRID_COLOR, zorder=0)
+ax.axvline(0, color=GRID_COLOR, linewidth=1, zorder=2)
 
-# Resaltar comunas donde Cepeda gana
-for i, (_, row) in enumerate(df_comunas.iterrows()):
-    if row['ivan_cepeda'] > row['abelardo_de_la_espriella']:
-        ax.axhspan(i - 0.45, i + 0.45, color='#2563EB', alpha=0.06)
+# ── Títulos ────────────────────────────────────────────────────────────────
+fig.text(
+    0.07, 0.97,
+    'Resultados electorales por comuna — Medellín',
+    ha='left', va='top',
+    fontsize=17, fontweight='bold', color=TEXTO_PRINC
+)
+fig.text(
+    0.07, 0.935,
+    'Senado 2022 · Votos por candidato en las 16 comunas',
+    ha='left', va='top',
+    fontsize=11, color=TEXTO_SEC
+)
+fig.text(
+    0.07, 0.905,
+    'Fuente: Registraduría Nacional · Ciencia, Economía y Sociedad M.L.',
+    ha='left', va='top',
+    fontsize=9, color=TEXTO_SEC, style='italic'
+)
 
-plt.tight_layout()
-plt.savefig(r'C:\Users\david\Downloads\ces_analisis_electoral\outputs\grafica_electoral_medellin.png', dpi=150, bbox_inches='tight')
-            
+# ── Leyenda ────────────────────────────────────────────────────────────────
+ax.legend(
+    loc='lower right',
+    fontsize=10,
+    framealpha=1,
+    edgecolor=GRID_COLOR,
+    facecolor=FONDO,
+    labelcolor=TEXTO_PRINC
+)
+
+plt.tight_layout(rect=[0, 0, 1, 0.90])
+plt.savefig(
+    r'C:\Users\david\Downloads\ces_analisis_electoral\outputs\grafica_electoral_medellin.png',
+    dpi=160,
+    bbox_inches='tight',
+    facecolor=FONDO
+)
 print("Gráfica guardada.")

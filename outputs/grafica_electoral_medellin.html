@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resultados electorales por comuna — Medellín</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:#f4f2ed;
+    font-family:'DejaVu Sans','Helvetica Neue',Arial,sans-serif;
+    padding:32px 40px 40px;
+  }
+  h1{font-size:20px;font-weight:700;color:#3d3b3d;line-height:1.25;margin-bottom:6px}
+  .sub{font-size:13px;color:#787e57;margin-bottom:4px}
+  .fuente{font-size:11px;color:#787e57;font-style:italic;margin-bottom:28px}
+  .chart-wrap{position:relative;width:100%;height:784px}
+  .legend{
+    display:flex;flex-wrap:wrap;gap:20px;
+    margin-top:20px;
+    padding:12px 16px;
+    background:#fff;
+    border:1px solid #d6d3ca;
+    border-radius:6px;
+    width:fit-content;
+    margin-left:auto;
+  }
+  .leg-item{display:flex;align-items:center;gap:7px;font-size:12px;color:#3d3b3d}
+  .leg-dot{width:12px;height:12px;border-radius:2px;flex-shrink:0}
+</style>
+</head>
+<body>
+<h1>Resultados electorales por comuna — Medellín</h1>
+<p class="sub">Elecciones legislativas 08/03/2026 · Votos por candidato en las 16 comunas</p>
+<p class="fuente">Fuente: Datos internos campaña · Registraduría Nacional del Estado Civil · Ciencia, Economía y Sociedad M.L.</p>
+
+<div class="chart-wrap">
+  <canvas id="chartMedellin"
+    role="img"
+    aria-label="Gráfica de barras horizontales agrupadas mostrando votos por candidato"
+  ></canvas>
+</div>
+
+<div class="legend">
+  <div class="leg-item"><div class="leg-dot" style="background:#7c3aed"></div>Iván Cepeda</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#ea580c"></div>De La Espriella</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#38bdf8"></div>Paloma Valencia</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#ca8a04"></div>Sergio Fajardo</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const ctx = document.getElementById('chartMedellin');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: ["El Poblado", "Guayabal", "Laureles-Estadio", "La América", "Santa Cruz", "La Candelaria", "San Javier", "Villa Hermosa", "Popular", "Castilla", "Doce de Octubre", "Manrique", "Buenos Aires", "Aranjuez", "Belén", "Robledo"],
+    datasets: [{"label": "Iván Cepeda", "data": [5118, 7170, 11860, 13668, 13818, 17090, 17096, 17943, 18002, 19128, 19609, 20630, 20838, 21890, 22223, 23684], "backgroundColor": "#7c3aedeb", "borderColor": "#7c3aed", "borderWidth": 0, "borderRadius": 3, "borderSkipped": false}, {"label": "De La Espriella", "data": [61114, 22334, 49240, 43928, 19169, 34759, 31288, 27222, 21441, 37015, 36137, 30126, 41057, 35962, 81940, 40947], "backgroundColor": "#ea580ceb", "borderColor": "#ea580c", "borderWidth": 0, "borderRadius": 3, "borderSkipped": false}, {"label": "Paloma Valencia", "data": [10328, 3164, 7604, 6308, 3019, 6179, 4784, 4248, 3902, 4957, 5554, 4915, 5625, 5351, 11094, 5808], "backgroundColor": "#38bdf8eb", "borderColor": "#38bdf8", "borderWidth": 0, "borderRadius": 3, "borderSkipped": false}, {"label": "Sergio Fajardo", "data": [5104, 3470, 7228, 7007, 3523, 4624, 4996, 4364, 3742, 6692, 6357, 5468, 7225, 6505, 12029, 8365], "backgroundColor": "#ca8a04eb", "borderColor": "#ca8a04", "borderWidth": 0, "borderRadius": 3, "borderSkipped": false}]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ' ' + ctx.dataset.label + ': ' +
+            ctx.parsed.x.toLocaleString('es-CO')
+        }
+      }
+    },
+    scales: {
+      x: {
+        max: 88495,
+        grid: {
+          color: '#d6d3ca',
+          lineWidth: 0.8,
+        },
+        border: { display: false },
+        ticks: {
+          color: '#787e57',
+          font: { size: 11 },
+          callback: v => v.toLocaleString('es-CO')
+        }
+      },
+      y: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: {
+          color: '#3d3b3d',
+          font: { size: 12 },
+          crossAlign: 'far',
+        }
+      }
+    },
+    layout: { padding: { left: 4, right: 16 } }
+  }
+});
+</script>
+</body>
+</html>

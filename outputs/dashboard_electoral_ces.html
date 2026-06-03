@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Electoral Valle de Aburrá — CES M.L.</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --cep:#7c3aed;--abe:#ea580c;--pal:#0284c7;--faj:#ca8a04;--fajpal:#059669;
+    --abst:#94a3b8;--bg:#f8f7f4;--card:#fff;--text:#1a1a1a;--muted:#6b7280;
+    --border:#e5e7eb;
+  }
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+  .header{background:#fff;border-bottom:1px solid var(--border);padding:20px 28px;position:sticky;top:0;z-index:100}
+  .header-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
+  .header h1{font-size:18px;font-weight:700;color:#111;letter-spacing:-0.3px}
+  .header-sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .badge{display:inline-block;background:#f3f0ff;color:#7c3aed;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid #d8b4fe}
+  .tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:#fff;padding:0 28px;position:sticky;top:73px;z-index:99}
+  .tab{padding:12px 18px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+  .tab.active{color:#7c3aed;border-bottom-color:#7c3aed}
+  .tab:hover:not(.active){color:#374151}
+  .content{padding:24px 28px;max-width:1200px;margin:0 auto}
+  .section{display:none}.section.active{display:block}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:20px;padding:14px 16px;background:#fff;border:1px solid var(--border);border-radius:8px}
+  .leg-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#374151}
+  .leg-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+  .chart-title{font-size:14px;font-weight:600;color:#111;margin-bottom:4px}
+  .chart-sub{font-size:12px;color:var(--muted);margin-bottom:16px}
+  .bar-chart-wrap{background:#fff;border:1px solid var(--border);border-radius:10px;padding:20px 16px;margin-bottom:20px;overflow-x:auto}
+  .bar-row{display:flex;align-items:center;margin-bottom:10px;gap:10px}
+  .bar-label{width:130px;flex-shrink:0;font-size:12px;font-weight:500;color:#374151;text-align:right;line-height:1.3}
+  .bar-track{flex:1;min-width:0;position:relative;height:26px}
+  .bar-stack{height:100%;display:flex;border-radius:4px;overflow:hidden;position:relative}
+  .bar-seg{height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;overflow:hidden;transition:opacity .15s;cursor:pointer}
+  .bar-seg:hover{opacity:.82}
+  .bar-seg span{white-space:nowrap;padding:0 3px}
+  .bar-total{width:62px;flex-shrink:0;font-size:11px;color:var(--muted);text-align:left;padding-left:2px}
+  .sortbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+  .sort-label{font-size:12px;color:var(--muted);font-weight:500}
+  .sort-btn{padding:5px 12px;font-size:12px;border:1px solid var(--border);border-radius:20px;background:#fff;cursor:pointer;color:#374151;transition:all .15s}
+  .sort-btn.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
+  .scale-note{font-size:11px;color:var(--muted);margin-bottom:12px;font-style:italic}
+  .tooltip{position:fixed;background:#111;color:#fff;padding:8px 12px;border-radius:6px;font-size:12px;pointer-events:none;z-index:1000;opacity:0;transition:opacity .1s;max-width:220px;line-height:1.6}
+  .abst-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .abst-bar-label{width:110px;flex-shrink:0;font-size:12px;font-weight:500;color:#374151;text-align:right}
+  .abst-bar-outer{flex:1;background:#f1f5f9;border-radius:4px;height:22px;overflow:hidden;position:relative}
+  .abst-bar-inner{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:8px}
+  .abst-bar-pct{font-size:11px;font-weight:600;color:#fff}
+  .abst-bar-extra{position:absolute;right:0;top:0;bottom:0;display:flex;align-items:center;padding-right:8px;font-size:11px;color:#6b7280}
+  .key-insight{background:#faf5ff;border-left:3px solid #7c3aed;padding:12px 16px;margin:12px 0;border-radius:0 8px 8px 0;font-size:13px;color:#374151;line-height:1.6}
+  .key-insight strong{color:#6d28d9;font-weight:600}
+  .analysis-note{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:#166534;line-height:1.6}
+  .analysis-note strong{color:#14532d}
+  .section-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:24px 0 12px}
+  .muni-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px}
+  .muni-card-name{font-size:14px;font-weight:600;color:#111;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+  .footer{text-align:center;font-size:11px;color:var(--muted);padding:24px;border-top:1px solid var(--border);margin-top:8px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>Análisis Electoral Valle de Aburrá</h1>
+      <div class="header-sub">Legislativas 08/03/2026 (comunas Medellín) · Presidenciales 31/05/2026 (municipios)</div>
+    </div>
+    <span class="badge">CES M.L.</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('comunas')">Comunas Medellín</div>
+  <div class="tab" onclick="showTab('municipios')">Municipios Valle de Aburrá</div>
+  <div class="tab" onclick="showTab('abstencion')">Abstención y segunda vuelta</div>
+</div>
+
+<div class="tooltip" id="tt"></div>
+
+<div id="sec-comunas" class="content section active">
+  <div class="chart-title">Resultados por comuna — Medellín</div>
+  <div class="chart-sub">Barras apiladas · el largo de cada barra es proporcional al total de votos de esa comuna</div>
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:#7c3aed"></div> Iván Cepeda</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#ea580c"></div> De La Espriella</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#0284c7"></div> Paloma Valencia</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#ca8a04"></div> Sergio Fajardo</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#059669"></div> Fajardo + Paloma</div>
+  </div>
+  <div class="sortbar">
+    <span class="sort-label">Ordenar por:</span>
+    <button class="sort-btn active" onclick="sortComunas('cepeda')">% Cepeda ↓</button>
+    <button class="sort-btn" onclick="sortComunas('abelardo')">% Abelardo ↓</button>
+    <button class="sort-btn" onclick="sortComunas('fajpal')">% Faj+Pal ↓</button>
+    <button class="sort-btn" onclick="sortComunas('votos')">Votos totales</button>
+  </div>
+  <p class="scale-note">La longitud de cada barra refleja el peso electoral de la comuna. Las proporciones de color muestran la distribución porcentual de candidatos.</p>
+  <div class="bar-chart-wrap" id="chart-comunas"></div>
+</div>
+
+<div id="sec-municipios" class="content section">
+  <div class="chart-title">Resultados por municipio — Valle de Aburrá (sin Medellín)</div>
+  <div class="chart-sub">Barras apiladas · el largo de cada barra es proporcional al total de votos del municipio · Presidenciales 31/05/2026</div>
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:#7c3aed"></div> Iván Cepeda</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#ea580c"></div> De La Espriella</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#0284c7"></div> Paloma Valencia</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#ca8a04"></div> Sergio Fajardo</div>
+  </div>
+  <div class="sortbar">
+    <span class="sort-label">Ordenar por:</span>
+    <button class="sort-btn active" onclick="sortMunis('cepeda')">% Cepeda ↓</button>
+    <button class="sort-btn" onclick="sortMunis('abelardo')">% Abelardo ↓</button>
+    <button class="sort-btn" onclick="sortMunis('fajpal')">% Faj+Pal ↓</button>
+    <button class="sort-btn" onclick="sortMunis('votos')">Votos absolutos</button>
+  </div>
+  <p class="scale-note">La longitud de cada barra refleja el peso electoral del municipio. Las proporciones de color muestran la distribución porcentual de candidatos.</p>
+  <div class="bar-chart-wrap" id="chart-munis"></div>
+</div>
+
+<div id="sec-abstencion" class="content section">
+  <div class="analysis-note">
+    <strong>Pregunta estratégica:</strong> ¿vale más movilizar al abstencionista o convertir al votante de Fajardo/Paloma? Aquí se cruzan ambas variables por municipio para orientar el esfuerzo de campaña en segunda vuelta.
+    <br><small style="opacity:.7">Nota: la abstención se calcula sobre estimados de censo electoral 2026. El total de votos incluye blancos y nulos (~5–7% adicional sobre los 4 candidatos principales).</small>
+  </div>
+  <div class="section-head">Abstención estimada por municipio</div>
+  <div class="bar-chart-wrap"><div id="abst-bars"></div></div>
+  <div class="section-head">Potencial de segunda vuelta: abstencionistas + votantes Fajardo/Paloma</div>
+  <div class="key-insight">
+    <strong>Lectura:</strong> Para cada municipio se comparan tres magnitudes contra la misma escala. La <strong style="color:#7c3aed">barra morada</strong> es el voto actual de Cepeda. La gris son los abstencionistas estimados. La verde el bloque Fajardo+Paloma disponible para transferencia.
+  </div>
+  <div class="bar-chart-wrap" id="potencial-bars"></div>
+  <div class="section-head">Análisis por municipio — composición detallada</div>
+  <div id="muni-detail-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px"></div>
+</div>
+
+<div class="footer">
+  Fuente: Datos internos campaña · Preconteo Registraduría Nacional del Estado Civil · Estimados censo electoral DANE/Registraduría<br>
+  Ciencia, Economía y Sociedad M.L. · Medellín, junio 2026
+</div>
+
+<script>
+const CEPEDA='#7c3aed', ABEL='#ea580c', PAL='#0284c7', FAJ='#ca8a04', FAJPAL='#059669', ABST='#94a3b8';
+
+const comunas = [
+  {
+    "name": "Popular",
+    "cepeda": 38.2,
+    "abelardo": 45.5,
+    "paloma": 8.3,
+    "fajardo": 7.9,
+    "fajpal": 16.2,
+    "votos": 47087,
+    "vcep": 18002,
+    "vabe": 21441,
+    "vpal": 3902,
+    "vfaj": 3742
+  },
+  {
+    "name": "Santa Cruz",
+    "cepeda": 35.0,
+    "abelardo": 48.5,
+    "paloma": 7.6,
+    "fajardo": 8.9,
+    "fajpal": 16.5,
+    "votos": 39529,
+    "vcep": 13818,
+    "vabe": 19169,
+    "vpal": 3019,
+    "vfaj": 3523
+  },
+  {
+    "name": "Manrique",
+    "cepeda": 33.7,
+    "abelardo": 49.3,
+    "paloma": 8.0,
+    "fajardo": 8.9,
+    "fajpal": 16.9,
+    "votos": 61139,
+    "vcep": 20630,
+    "vabe": 30126,
+    "vpal": 4915,
+    "vfaj": 5468
+  },
+  {
+    "name": "Aranjuez",
+    "cepeda": 31.4,
+    "abelardo": 51.6,
+    "paloma": 7.7,
+    "fajardo": 9.3,
+    "fajpal": 17.0,
+    "votos": 69708,
+    "vcep": 21890,
+    "vabe": 35962,
+    "vpal": 5351,
+    "vfaj": 6505
+  },
+  {
+    "name": "Castilla",
+    "cepeda": 28.2,
+    "abelardo": 54.6,
+    "paloma": 7.3,
+    "fajardo": 9.9,
+    "fajpal": 17.2,
+    "votos": 67792,
+    "vcep": 19128,
+    "vabe": 37015,
+    "vpal": 4957,
+    "vfaj": 6692
+  },
+  {
+    "name": "Doce de Octubre",
+    "cepeda": 29.0,
+    "abelardo": 53.4,
+    "paloma": 8.2,
+    "fajardo": 9.4,
+    "fajpal": 17.6,
+    "votos": 67657,
+    "vcep": 19609,
+    "vabe": 36137,
+    "vpal": 5554,
+    "vfaj": 6357
+  },
+  {
+    "name": "Robledo",
+    "cepeda": 30.1,
+    "abelardo": 52.0,
+    "paloma": 7.4,
+    "fajardo": 10.6,
+    "fajpal": 18.0,
+    "votos": 78804,
+    "vcep": 23684,
+    "vabe": 40947,
+    "vpal": 5808,
+    "vfaj": 8365
+  },
+  {
+    "name": "Villa Hermosa",
+    "cepeda": 33.4,
+    "abelardo": 50.6,
+    "paloma": 7.9,
+    "fajardo": 8.1,
+    "fajpal": 16.0,
+    "votos": 53777,
+    "vcep": 17943,
+    "vabe": 27222,
+    "vpal": 4248,
+    "vfaj": 4364
+  },
+  {
+    "name": "Buenos Aires",
+    "cepeda": 27.9,
+    "abelardo": 54.9,
+    "paloma": 7.5,
+    "fajardo": 9.7,
+    "fajpal": 17.2,
+    "votos": 74745,
+    "vcep": 20838,
+    "vabe": 41057,
+    "vpal": 5625,
+    "vfaj": 7225
+  },
+  {
+    "name": "La Candelaria",
+    "cepeda": 27.3,
+    "abelardo": 55.5,
+    "paloma": 9.9,
+    "fajardo": 7.4,
+    "fajpal": 17.3,
+    "votos": 62652,
+    "vcep": 17090,
+    "vabe": 34759,
+    "vpal": 6179,
+    "vfaj": 4624
+  },
+  {
+    "name": "Laureles-Estadio",
+    "cepeda": 15.6,
+    "abelardo": 64.8,
+    "paloma": 10.0,
+    "fajardo": 9.5,
+    "fajpal": 19.5,
+    "votos": 75932,
+    "vcep": 11860,
+    "vabe": 49240,
+    "vpal": 7604,
+    "vfaj": 7228
+  },
+  {
+    "name": "La América",
+    "cepeda": 19.3,
+    "abelardo": 61.9,
+    "paloma": 8.9,
+    "fajardo": 9.9,
+    "fajpal": 18.8,
+    "votos": 70911,
+    "vcep": 13668,
+    "vabe": 43928,
+    "vpal": 6308,
+    "vfaj": 7007
+  },
+  {
+    "name": "San Javier",
+    "cepeda": 29.4,
+    "abelardo": 53.8,
+    "paloma": 8.2,
+    "fajardo": 8.6,
+    "fajpal": 16.8,
+    "votos": 58164,
+    "vcep": 17096,
+    "vabe": 31288,
+    "vpal": 4784,
+    "vfaj": 4996
+  },
+  {
+    "name": "El Poblado",
+    "cepeda": 6.3,
+    "abelardo": 74.8,
+    "paloma": 12.6,
+    "fajardo": 6.2,
+    "fajpal": 18.8,
+    "votos": 81664,
+    "vcep": 5118,
+    "vabe": 61114,
+    "vpal": 10328,
+    "vfaj": 5104
+  },
+  {
+    "name": "Guayabal",
+    "cepeda": 19.8,
+    "abelardo": 61.8,
+    "paloma": 8.8,
+    "fajardo": 9.6,
+    "fajpal": 18.4,
+    "votos": 36138,
+    "vcep": 7170,
+    "vabe": 22334,
+    "vpal": 3164,
+    "vfaj": 3470
+  },
+  {
+    "name": "Belén",
+    "cepeda": 17.5,
+    "abelardo": 64.4,
+    "paloma": 8.7,
+    "fajardo": 9.5,
+    "fajpal": 18.2,
+    "votos": 127286,
+    "vcep": 22223,
+    "vabe": 81940,
+    "vpal": 11094,
+    "vfaj": 12029
+  }
+];
+
+const municipios = [
+  {
+    "name": "Bello",
+    "cepeda": 27.9,
+    "abelardo": 51.7,
+    "paloma": 8.2,
+    "fajardo": 8.1,
+    "fajpal": 16.4,
+    "votos": 216641,
+    "vcep": 63055,
+    "vabe": 116690,
+    "vpal": 18571,
+    "vfaj": 18325,
+    "censo": 337000
+  },
+  {
+    "name": "Barbosa",
+    "cepeda": 28.9,
+    "abelardo": 48.4,
+    "paloma": 11.4,
+    "fajardo": 5.7,
+    "fajpal": 17.1,
+    "votos": 22642,
+    "vcep": 6929,
+    "vabe": 11617,
+    "vpal": 2731,
+    "vfaj": 1365,
+    "censo": 40000
+  },
+  {
+    "name": "La Estrella",
+    "cepeda": 24.4,
+    "abelardo": 53.7,
+    "paloma": 9.8,
+    "fajardo": 8.6,
+    "fajpal": 18.3,
+    "votos": 40559,
+    "vcep": 10269,
+    "vabe": 22579,
+    "vpal": 4111,
+    "vfaj": 3600,
+    "censo": 75000
+  },
+  {
+    "name": "Itagüí",
+    "cepeda": 24.4,
+    "abelardo": 56.1,
+    "paloma": 7.5,
+    "fajardo": 8.4,
+    "fajpal": 15.9,
+    "votos": 155910,
+    "vcep": 39461,
+    "vabe": 90656,
+    "vpal": 12156,
+    "vfaj": 13637,
+    "censo": 242000
+  },
+  {
+    "name": "Sabaneta",
+    "cepeda": 16.8,
+    "abelardo": 62.0,
+    "paloma": 9.3,
+    "fajardo": 9.7,
+    "fajpal": 19.0,
+    "votos": 69356,
+    "vcep": 11895,
+    "vabe": 43977,
+    "vpal": 6610,
+    "vfaj": 6874,
+    "censo": 106000
+  },
+  {
+    "name": "Caldas",
+    "cepeda": 28.8,
+    "abelardo": 48.0,
+    "paloma": 9.3,
+    "fajardo": 9.3,
+    "fajpal": 18.6,
+    "votos": 44481,
+    "vcep": 13435,
+    "vabe": 22385,
+    "vpal": 4339,
+    "vfaj": 4322,
+    "censo": 74000
+  },
+  {
+    "name": "Copacabana",
+    "cepeda": 28.9,
+    "abelardo": 50.5,
+    "paloma": 8.0,
+    "fajardo": 8.6,
+    "fajpal": 16.6,
+    "votos": 43958,
+    "vcep": 13240,
+    "vabe": 23129,
+    "vpal": 3660,
+    "vfaj": 3929,
+    "censo": 88000
+  },
+  {
+    "name": "Girardota",
+    "cepeda": 26.9,
+    "abelardo": 50.8,
+    "paloma": 9.0,
+    "fajardo": 8.3,
+    "fajpal": 17.3,
+    "votos": 30063,
+    "vcep": 8511,
+    "vabe": 16081,
+    "vpal": 2840,
+    "vfaj": 2631,
+    "censo": 55000
+  },
+  {
+    "name": "Envigado",
+    "cepeda": 14.7,
+    "abelardo": 65.4,
+    "paloma": 9.1,
+    "fajardo": 8.7,
+    "fajpal": 17.8,
+    "votos": 159736,
+    "vcep": 23934,
+    "vabe": 106750,
+    "vpal": 14875,
+    "vfaj": 14177,
+    "censo": 248000
+  }
+];
+
+const tt = document.getElementById('tt');
+function showTT(e, html){ tt.innerHTML=html; tt.style.opacity=1; moveTT(e); }
+function moveTT(e){ tt.style.left=(e.clientX+14)+'px'; tt.style.top=(e.clientY-10)+'px'; }
+function hideTT(){ tt.style.opacity=0; }
+document.addEventListener('mousemove', moveTT);
+function fmt(n){ return n.toLocaleString('es-CO'); }
+function fmtpct(p){ return p.toFixed(1)+'%'; }
+
+function renderStackedBars(container, data, sortKey='cepeda'){
+  let sorted = [...data];
+  if(sortKey==='cepeda')   sorted.sort((a,b)=>b.cepeda-a.cepeda);
+  if(sortKey==='abelardo') sorted.sort((a,b)=>b.abelardo-a.abelardo);
+  if(sortKey==='fajpal')   sorted.sort((a,b)=>b.fajpal-a.fajpal);
+  if(sortKey==='votos')    sorted.sort((a,b)=>b.votos-a.votos);
+
+  const maxVotos = Math.max(...sorted.map(d=>d.votos));
+  const segs = [
+    {key:'cepeda',  color:CEPEDA, label:'Cepeda',  vkey:'vcep'},
+    {key:'abelardo',color:ABEL,   label:'Abelardo', vkey:'vabe'},
+    {key:'paloma',  color:PAL,    label:'Paloma',   vkey:'vpal'},
+    {key:'fajardo', color:FAJ,    label:'Fajardo',  vkey:'vfaj'},
+  ];
+
+  let html = '';
+  for(const d of sorted){
+    const trackPct = (d.votos / maxVotos * 100).toFixed(2);
+    html += `<div class="bar-row">
+      <div class="bar-label">${d.name}</div>
+      <div class="bar-track">
+        <div class="bar-stack" style="width:${trackPct}%">`;
+    for(const s of segs){
+      const pct   = d[s.key];
+      const votos = d[s.vkey];
+      const show  = pct >= 7;
+      html += `<div class="bar-seg" style="width:${pct}%;background:${s.color}"
+        onmouseenter="showTT(event,'<b>${s.label}</b><br>${fmtpct(pct)}<br>${fmt(votos)} votos')"
+        onmouseleave="hideTT()">
+        ${show ? `<span>${pct.toFixed(0)}%</span>` : ''}
+      </div>`;
+    }
+    html += `</div></div>
+      <div class="bar-total">${fmt(d.votos)}</div>
+    </div>`;
+  }
+  container.innerHTML = html;
+}
+
+function sortComunas(k){
+  document.querySelectorAll('#sec-comunas .sort-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderStackedBars(document.getElementById('chart-comunas'), comunas, k);
+}
+function sortMunis(k){
+  document.querySelectorAll('#sec-municipios .sort-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderStackedBars(document.getElementById('chart-munis'), municipios, k);
+}
+
+function renderAbstencion(){
+  const munis = municipios.map(m => {
+    const totalReal  = Math.round(m.votos / 0.93);
+    const abst_votos = m.censo - totalReal;
+    const abst_pct   = (abst_votos / m.censo * 100);
+    const vfajpal    = m.vpal + m.vfaj;
+    const potencial  = abst_votos + vfajpal;
+    return {...m, abst_pct, abst_votos, totalReal, vfajpal, potencial};
+  }).sort((a,b)=>b.abst_pct-a.abst_pct);
+
+  let html = '';
+  for(const m of munis){
+    const color = m.abst_pct > 44 ? '#ef4444' : m.abst_pct > 38 ? '#f97316' : '#64748b';
+    html += `<div class="abst-bar-row">
+      <div class="abst-bar-label">${m.name}</div>
+      <div class="abst-bar-outer">
+        <div class="abst-bar-inner" style="width:${m.abst_pct.toFixed(1)}%;background:${color}">
+          <span class="abst-bar-pct">${m.abst_pct.toFixed(1)}%</span>
+        </div>
+        <span class="abst-bar-extra">~${fmt(m.abst_votos)} no votaron</span>
+      </div>
+    </div>`;
+  }
+  document.getElementById('abst-bars').innerHTML = html;
+
+  const maxPot = Math.max(...munis.map(m=>m.potencial));
+  let html2 = '';
+  for(const m of munis.sort((a,b)=>b.potencial-a.potencial)){
+    const pctCep  = (m.vcep / maxPot * 100).toFixed(1);
+    const pctAbst = (m.abst_votos / maxPot * 100).toFixed(1);
+    const pctFP   = (m.vfajpal / maxPot * 100).toFixed(1);
+    html2 += `<div style="margin-bottom:16px">
+      <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:6px">${m.name}</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <div style="width:80px;font-size:11px;color:var(--muted);text-align:right">Voto actual</div>
+        <div style="flex:1;background:#f1f5f9;border-radius:4px;overflow:hidden;height:20px">
+          <div style="width:${pctCep}%;background:${CEPEDA};height:100%;display:flex;align-items:center;padding-left:6px">
+            <span style="font-size:10px;font-weight:600;color:#fff">${fmt(m.vcep)}</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <div style="width:80px;font-size:11px;color:var(--muted);text-align:right">Abstencionistas</div>
+        <div style="flex:1;background:#f1f5f9;border-radius:4px;overflow:hidden;height:20px">
+          <div style="width:${pctAbst}%;background:${ABST};height:100%;display:flex;align-items:center;padding-left:6px">
+            <span style="font-size:10px;font-weight:600;color:#fff">~${fmt(m.abst_votos)}</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:80px;font-size:11px;color:var(--muted);text-align:right">Faj+Paloma</div>
+        <div style="flex:1;background:#f1f5f9;border-radius:4px;overflow:hidden;height:20px">
+          <div style="width:${pctFP}%;background:${FAJPAL};height:100%;display:flex;align-items:center;padding-left:6px">
+            <span style="font-size:10px;font-weight:600;color:#fff">${fmt(m.vfajpal)}</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+  document.getElementById('potencial-bars').innerHTML = html2;
+
+  let cards = '';
+  for(const m of munis.sort((a,b)=>b.vcep-a.vcep)){
+    const ratio     = (m.potencial / m.vcep).toFixed(1);
+    const prio      = m.potencial > 100000 ? 'Alta prioridad' : m.potencial > 40000 ? 'Prioridad media' : 'Secundario';
+    const prioColor = m.potencial > 100000 ? '#7c3aed' : m.potencial > 40000 ? '#ca8a04' : '#6b7280';
+    cards += `<div class="muni-card">
+      <div class="muni-card-name">
+        <span>${m.name}</span>
+        <span style="font-size:11px;color:${prioColor};font-weight:600;background:${prioColor}18;padding:3px 8px;border-radius:12px">${prio}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div style="background:#f5f3ff;border-radius:6px;padding:10px;text-align:center">
+          <div style="font-size:18px;font-weight:700;color:#7c3aed">${fmt(m.vcep)}</div>
+          <div style="font-size:10px;color:#6d28d9">voto Cepeda</div>
+        </div>
+        <div style="background:#f0fdf4;border-radius:6px;padding:10px;text-align:center">
+          <div style="font-size:18px;font-weight:700;color:#059669">${fmt(m.potencial)}</div>
+          <div style="font-size:10px;color:#065f46">potencial 2ª vuelta</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+        <div style="text-align:center;padding:6px;background:#f9fafb;border-radius:6px">
+          <div style="font-size:12px;font-weight:600;color:#475569">~${m.abst_pct.toFixed(0)}%</div>
+          <div style="font-size:10px;color:var(--muted)">abstención</div>
+        </div>
+        <div style="text-align:center;padding:6px;background:#f9fafb;border-radius:6px">
+          <div style="font-size:12px;font-weight:600;color:#059669">${fmtpct(m.fajpal)}</div>
+          <div style="font-size:10px;color:var(--muted)">Faj+Pal</div>
+        </div>
+        <div style="text-align:center;padding:6px;background:#f9fafb;border-radius:6px">
+          <div style="font-size:12px;font-weight:600;color:#374151">${ratio}×</div>
+          <div style="font-size:10px;color:var(--muted)">mult. Cepeda</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);border-top:1px solid var(--border);padding-top:8px">
+        Abelardo ${fmtpct(m.abelardo)} · Censo ≈${fmt(m.censo)}
+      </div>
+    </div>`;
+  }
+  document.getElementById('muni-detail-grid').innerHTML = cards;
+}
+
+function showTab(name){
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('active', ['comunas','municipios','abstencion'][i]===name);
+  });
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+}
+
+renderStackedBars(document.getElementById('chart-comunas'), comunas, 'cepeda');
+renderStackedBars(document.getElementById('chart-munis'),   municipios, 'cepeda');
+renderAbstencion();
+</script>
+</body>
+</html>
